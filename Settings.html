@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quick Pay — Settings</title>
+<style>
+  :root{
+    --bg:#0b0f10; --card:#10161a; --muted:#9aa4ad; --accent:#00c853;
+    --accent-2:#1de9b6; --text:#e8f0f2; --danger:#ff4d4f; --shadow:0 10px 30px rgba(0,0,0,.35);
+    --tile-border:#1b242b;
+  }
+  *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  html, body { height:100%; }
+  body{
+    margin:0;color:var(--text);
+    background:linear-gradient(135deg,#071013,#0b0f10 40%,#0e1418);
+    min-height:100vh; min-height:100dvh;
+  }
+  a{text-decoration:none;color:inherit}
+
+  .app{width:100%;max-width:720px;margin:0 auto;padding:0}
+  .panel{
+    background:var(--card);border:1px solid var(--tile-border);box-shadow:var(--shadow);
+    min-height:100vh; min-height:100dvh;
+    border-radius:0; border-left:0; border-right:0;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    display:flex; flex-direction:column;
+  }
+  @media (min-width:720px){
+    .panel{border-radius:18px;border-left:1px solid var(--tile-border);border-right:1px solid var(--tile-border);}
+  }
+
+  .topbar{
+    position:sticky;top:0;z-index:5;
+    background:rgba(16,22,26,.9); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:space-between;
+    margin:-8px -8px 12px -8px; padding:8px;
+    border-bottom:1px solid var(--tile-border); border-radius:12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#00140a}
+  .muted{color:var(--muted)}
+  .btn{padding:12px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002314;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#131b20;color:var(--text);border:1px solid #24303a}
+
+  .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #234030;background:#0d1f16;font-size:12px}
+  input{
+    width:100%;padding:14px;border-radius:12px;border:1px solid #2a353f;background:#0f1519;color:#e8f0f2
+  }
+  .error{color:#ff4d4f;font-size:13px}
+  .ok{color:#9de7c6;font-size:13px}
+  .section{background:#0e1418;border:1px solid #1b242b;border-radius:16px;padding:16px}
+  h3,h4{margin:0 0 8px}
+
+  @media (max-width:720px){
+    .btn{width:100%}
+    input{font-size:16px}
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <!-- Top bar -->
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">QP</div>
+          <div>
+            <h3 style="margin:0">Settings</h3>
+            <div class="muted" id="userEmail">email@example.com</div>
+          </div>
+        </div>
+        <div class="row" style="gap:8px">
+          <a class="btn secondary" href="dashboard.html">Dashboard</a>
+          <button id="logoutBtn" class="btn secondary">Logout</button>
+        </div>
+      </div>
+
+      <!-- Account info -->
+      <div class="row" style="margin:6px 0 18px">
+        <div class="pill">Account number: <span id="acctNo" style="font-family:ui-monospace;margin-left:6px">—</span></div>
+      </div>
+
+      <!-- Change password -->
+      <div class="section">
+        <h4>Change password</h4>
+        <div style="display:grid;gap:10px;max-width:480px">
+          <input id="np1" type="password" placeholder="New password (min 6 chars)" />
+          <input id="np2" type="password" placeholder="Confirm new password" />
+          <div class="row" style="align-items:center">
+            <button id="savePass" class="btn">Save</button>
+            <div id="msg" class="muted"></div>
+          </div>
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:6px">Tip: Password updates apply to this device’s saved account.</div>
+      </div>
+
+      <div style="margin-top:auto;color:#9aa4ad;font-size:12px;text-align:center">© Quick Pay</div>
+    </div>
+  </div>
+
+<script>
+  // Storage/session keys (consistent with other pages)
+  const LS_ACCOUNTS="qp_accounts_v1";
+  const SESSION_EMAIL_KEY="qp_session_email";
+  const SESSION_SPECIAL_KEY="qp_session_special";
+
+  // Helpers
+  function loadJSON(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch(e){ return d; } }
+  function saveJSON(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+  // Session
+  const email = sessionStorage.getItem(SESSION_EMAIL_KEY);
+  const special = sessionStorage.getItem(SESSION_SPECIAL_KEY) === "1";
+  if(!email){ window.location.href="index.html"; }
+  document.getElementById("userEmail").textContent = email;
+
+  // Account number
+  const accts = loadJSON(LS_ACCOUNTS, {});
+  let acctNo = special
+    ? (localStorage.getItem("qp_special_acct") || "")
+    : (accts[email]?.accountNo || "");
+  if(!acctNo && !special){
+    // create an account number if missing
+    acctNo = Math.random().toString().slice(2,13);
+    if(!accts[email]) accts[email] = { password:"", balance:0 };
+    accts[email].accountNo = acctNo;
+    saveJSON(LS_ACCOUNTS, accts);
+  }
+  document.getElementById("acctNo").textContent = acctNo || "—";
+
+  // Change password
+  const msg = document.getElementById("msg");
+  document.getElementById("savePass").addEventListener("click", ()=>{
+    const p1 = document.getElementById("np1").value;
+    const p2 = document.getElementById("np2").value;
+
+    msg.textContent = ""; msg.className = "muted";
+
+    if(special){
+      msg.textContent = "Cannot change password for the special login.";
+      msg.className = "error";
+      return;
+    }
+    if(p1.length < 6){
+      msg.textContent = "Password must be at least 6 characters.";
+      msg.className = "error";
+      return;
+    }
+    if(p1 !== p2){
+      msg.textContent = "Passwords do not match.";
+      msg.className = "error";
+      return;
+    }
+    const accounts = loadJSON(LS_ACCOUNTS, {});
+    if(!accounts[email]){
+      msg.textContent = "Account not found.";
+      msg.className = "error";
+      return;
+    }
+    accounts[email].password = p1;
+    saveJSON(LS_ACCOUNTS, accounts);
+
+    msg.textContent = "Password updated.";
+    msg.className = "ok";
+    document.getElementById("np1").value = "";
+    document.getElementById("np2").value = "";
+  });
+
+  // Logout
+  document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    sessionStorage.removeItem(SESSION_EMAIL_KEY);
+    sessionStorage.removeItem(SESSION_SPECIAL_KEY);
+    window.location.href = "index.html";
+  });
+</script>
+</body>
+</html>

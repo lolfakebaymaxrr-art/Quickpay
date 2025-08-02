@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quick Pay — Money Sent</title>
+<style>
+  :root{
+    --bg:#0b0f10; --card:#10161a; --muted:#9aa4ad; --accent:#00c853;
+    --accent-2:#1de9b6; --text:#e8f0f2;
+    --tile-border:#1b242b; --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  html, body { height:100%; }
+  body{
+    margin:0;color:var(--text);
+    background:linear-gradient(135deg,#071013,#0b0f10 40%,#0e1418);
+    min-height:100vh; min-height:100dvh;
+  }
+  a{text-decoration:none;color:inherit}
+
+  .app{width:100%;max-width:980px;margin:0 auto;padding:0}
+  .panel{
+    background:var(--card);border:1px solid var(--tile-border);box-shadow:var(--shadow);
+    min-height:100vh; min-height:100dvh;
+    border-radius:0; border-left:0; border-right:0;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    display:flex; flex-direction:column;
+  }
+  @media (min-width:720px){
+    .panel{border-radius:18px;border-left:1px solid var(--tile-border);border-right:1px solid var(--tile-border);}
+  }
+
+  .topbar{
+    position:sticky;top:0;z-index:5;
+    background:rgba(16,22,26,.9); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:space-between;
+    margin:-8px -8px 12px -8px; padding:8px;
+    border-bottom:1px solid var(--tile-border); border-radius:12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#00140a}
+  .btn{padding:12px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002314;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#131b20;color:var(--text);border:1px solid #24303a}
+  .muted{color:var(--muted)}
+
+  .stage{max-width:720px;margin:10px auto 0;display:flex;flex-direction:column;gap:14px}
+  .card{background:#0e1418;border:1px solid #1b242b;border-radius:18px;padding:28px 24px}
+  .center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+
+  /* Success visuals */
+  .checkwrap{
+    width:84px;height:84px;border-radius:999px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#002314;
+    box-shadow:0 10px 34px rgba(0,0,0,.35);
+    animation:pop .25s ease-out;
+  }
+  @keyframes pop{0%{transform:scale(.7);opacity:.4}100%{transform:scale(1);opacity:1}}
+
+  .big-title{font-size:34px;font-weight:900;letter-spacing:.3px}
+  .subtitle{color:var(--muted);font-size:14px}
+
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
+  @media (max-width:720px){ .btn{width:100%} }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <!-- Top bar -->
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">QP</div>
+          <div>
+            <div class="muted">Quick Pay</div>
+            <div class="muted" id="userEmail">—</div>
+          </div>
+        </div>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn secondary" href="dashboard.html">Dashboard</a>
+          <a class="btn secondary" href="history.html">History</a>
+          <button id="logoutBtn" class="btn secondary">Logout</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS (simple, no extra details) -->
+      <div class="stage">
+        <div class="card center">
+          <div class="checkwrap" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+              <path d="M20 7 9.5 17.5 4 12" stroke="#083b27" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="big-title">Money sent</div>
+          <div class="subtitle">Your transfer was successful.</div>
+
+          <div class="actions">
+            <a class="btn" href="history.html">View transactions</a>
+            <a class="btn secondary" href="send.html">Make another transfer</a>
+            <a class="btn secondary" href="dashboard.html">Back to Dashboard</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:auto;color:#9aa4ad;font-size:12px;text-align:center">© Quick Pay</div>
+    </div>
+  </div>
+
+<script>
+  // Minimal script: show signed-in email (if available) and handle logout
+  const SESSION_EMAIL_KEY="qp_session_email", SESSION_SPECIAL_KEY="qp_session_special";
+  const email = sessionStorage.getItem(SESSION_EMAIL_KEY);
+  if(email) document.getElementById("userEmail").textContent = email;
+
+  document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    sessionStorage.removeItem(SESSION_EMAIL_KEY);
+    sessionStorage.removeItem(SESSION_SPECIAL_KEY);
+    window.location.href="index.html";
+  });
+</script>
+</body>
+</html>

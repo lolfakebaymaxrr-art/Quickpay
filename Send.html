@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quick Pay — Send</title>
+<style>
+  :root{
+    --bg:#0b0f10; --card:#10161a; --muted:#9aa4ad; --accent:#00c853;
+    --accent-2:#1de9b6; --text:#e8f0f2; --danger:#ff4d4f; --ink:#e8f0f2;
+    --tile:#121a1f; --tile-border:#1b242b; --shadow:0 10px 30px rgba(0,0,0,.35);
+    --cash:#10b981; --pp1:#003087; --pp2:#009cde;
+  }
+  *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  html, body { height:100%; }
+  body{
+    margin:0;color:var(--text);
+    background:linear-gradient(135deg,#071013,#0b0f10 40%,#0e1418);
+    min-height:100vh; min-height:100dvh;
+  }
+  a{text-decoration:none;color:inherit}
+  .app{width:100%;max-width:980px;margin:0 auto;padding:0}
+  .panel{background:var(--card);border:1px solid var(--tile-border);border-radius:18px;box-shadow:var(--shadow)}
+  .p24{
+    min-height:100vh; min-height:100dvh;
+    border-radius:0; border-left:0; border-right:0;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    display:flex; flex-direction:column;
+  }
+  .muted{color:var(--muted)}
+  h1,h2,h3{margin:0 0 10px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#00140a}
+  .topbar{position:sticky;top:0;z-index:5;background:rgba(16,22,26,.9);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:space-between;margin:-8px -8px 12px -8px;padding:8px;border-bottom:1px solid var(--tile-border);border-radius:12px}
+  .btn{padding:12px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002314;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#131b20;color:var(--text);border:1px solid #24303a}
+
+  .tabs{display:flex;gap:8px;margin-top:8px}
+  .tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;border:1px solid #22372d;background:#0f1519;cursor:pointer}
+  .tab.active{outline:2px solid rgba(0,200,83,.25);border-color:#315243;background:linear-gradient(135deg,#0f2a1b,#0e1f17)}
+  .ppLogo{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,var(--pp1),var(--pp2))}
+  .cashLogo{width:18px;height:18px;border-radius:4px;background:var(--cash);display:grid;place-items:center;font-weight:900;color:#053}
+  .qpLogo{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#012}
+
+  .form{display:grid;gap:12px;margin-top:12px}
+  label{font-size:14px}
+  input,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid #2a353f;background:#0f1519;color:var(--text)}
+  .error{color:var(--danger);font-size:13px}
+
+  /* Loading overlay */
+  #loading{
+    position:fixed; inset:0; background:rgba(0,0,0,.55);
+    display:none; align-items:center; justify-content:center; z-index:999;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+  .loadcard{
+    background:#10161a; border:1px solid #1b242b; border-radius:16px;
+    padding:18px 20px; min-width:240px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .spinner{
+    width:44px; height:44px;
+    border:3px solid #1f2a33; border-top-color: var(--accent-2);
+    border-radius:50%; animation:spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width:720px){
+    .btn{width:100%}
+    input,textarea{font-size:16px}
+  }
+  @media (min-width:720px){
+    .p24{border-radius:18px;border-left:1px solid var(--tile-border);border-right:1px solid var(--tile-border);}
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel p24">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">QP</div>
+          <div>
+            <h3>Send Money</h3>
+            <div class="muted" id="userEmail">email@example.com</div>
+          </div>
+        </div>
+        <div class="row">
+          <a class="btn secondary" href="dashboard.html">Dashboard</a>
+          <button id="logoutBtn" class="btn secondary">Logout</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div id="tabQP" class="tab active"><div class="qpLogo">QP</div> <span>Send to Quick Pay</span></div>
+        <div id="tabPP" class="tab"><div class="ppLogo"></div> <span>Send to PayPal</span></div>
+        <div id="tabCA" class="tab"><div class="cashLogo">$</div> <span>Send to Cash App</span></div>
+      </div>
+
+      <!-- Quick Pay -->
+      <div id="formQP" class="form">
+        <label>Recipient Quick Pay email
+          <input id="qp_email" type="email" placeholder="recipient@example.com" />
+        </label>
+        <label>Amount (EUR)
+          <input id="qp_amount" type="number" min="0" step="0.01" placeholder="0.00" />
+        </label>
+        <label>Narration (optional)
+          <input id="qp_note" maxlength="80" placeholder="e.g. Gift, rent, invoice..." />
+        </label>
+        <div id="qp_msg" class="error"></div>
+        <button id="qp_send" class="btn" type="button">Send</button>
+      </div>
+
+      <!-- PayPal -->
+      <div id="formPP" class="form" style="display:none">
+        <label>PayPal email
+          <input id="pp_email" type="email" placeholder="paypal-user@example.com" />
+        </label>
+        <label>Amount (EUR)
+          <input id="pp_amount" type="number" min="0" step="0.01" placeholder="0.00" />
+        </label>
+        <label>Narration (optional)
+          <input id="pp_note" maxlength="80" placeholder="Note to recipient..." />
+        </label>
+        <div id="pp_msg" class="error"></div>
+        <button id="pp_send" class="btn" type="button">Send</button>
+      </div>
+
+      <!-- Cash App -->
+      <div id="formCA" class="form" style="display:none">
+        <label>Cash App tag
+          <input id="ca_tag" placeholder="$cashtag" />
+        </label>
+        <label>Amount (EUR)
+          <input id="ca_amount" type="number" min="0" step="0.01" placeholder="0.00" />
+        </label>
+        <label>Narration (optional)
+          <input id="ca_note" maxlength="80" placeholder="Note to recipient..." />
+        </label>
+        <div id="ca_msg" class="error"></div>
+        <button id="ca_send" class="btn" type="button">Send</button>
+      </div>
+
+      <!-- successBox preserved (not used; we redirect instead) -->
+      <div id="successBox" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading" aria-hidden="true">
+    <div class="loadcard">
+      <div class="spinner" aria-label="Loading"></div>
+      <div class="muted" id="loadingText">Processing transfer…</div>
+    </div>
+  </div>
+
+<script>
+  // Keys / constants
+  const LS_ACCOUNTS="qp_accounts_v1", LS_TX="qp_tx_v1", SESSION_EMAIL_KEY="qp_session_email", SESSION_SPECIAL_KEY="qp_session_special";
+  const SPECIAL_EMAIL="ebuka@gmail.com", TRILLION=1_000_000_000_000;
+
+  // Helpers
+  const $=(s)=>document.querySelector(s);
+  function loadJSON(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+  function saveJSON(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function fmtEUR(n){return new Intl.NumberFormat(undefined,{style:"currency",currency:"EUR"}).format(n)}
+  function txId(){return 'QP-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase()}
+  function insufficient(amount, bal){ return !(amount>0) || amount>bal; }
+
+  // Session
+  const email=sessionStorage.getItem(SESSION_EMAIL_KEY);
+  const special=sessionStorage.getItem(SESSION_SPECIAL_KEY)==="1";
+  if(!email) window.location.href="index.html";
+  $("#userEmail").textContent=email;
+
+  // Accounts & balance
+  const accts=loadJSON(LS_ACCOUNTS,{});
+  if(!special && !accts[email]) accts[email]={password:"",balance:0};
+  if(!special && !accts[email].accountNo){ accts[email].accountNo=Math.random().toString().slice(2,13); saveJSON(LS_ACCOUNTS,accts); }
+  function getSpecialBalance(){ return Number(localStorage.getItem("qp_special_balance")||TRILLION); }
+  function setSpecialBalance(n){ localStorage.setItem("qp_special_balance", String(n)); }
+  function getBalance(){ return special? getSpecialBalance() : (accts[email]?.balance??0); }
+  function setBalance(n){ if(special) setSpecialBalance(n); else { accts[email].balance=n; saveJSON(LS_ACCOUNTS,accts); } }
+
+  // Transactions
+  function getTxList(user){ const all=loadJSON(LS_TX,{}); return all[user]??[]; }
+  function saveTxList(user,list){ const all=loadJSON(LS_TX,{}); all[user]=list; saveJSON(LS_TX,all); }
+  function addTxFor(user,tx){ const list=getTxList(user); list.push(tx); saveTxList(user,list); }
+
+  // Tabs
+  const tabQP=$("#tabQP"), tabPP=$("#tabPP"), tabCA=$("#tabCA");
+  const formQP=$("#formQP"), formPP=$("#formPP"), formCA=$("#formCA");
+  function setTab(which){
+    [tabQP,tabPP,tabCA].forEach(t=>t.classList.remove("active"));
+    [formQP,formPP,formCA].forEach(f=>f.style.display="none");
+    if(which==="qp"){tabQP.classList.add("active"); formQP.style.display="grid";}
+    if(which==="pp"){tabPP.classList.add("active"); formPP.style.display="grid";}
+    if(which==="ca"){tabCA.classList.add("active"); formCA.style.display="grid";}
+    $("#successBox").style.display="none";
+  }
+  tabQP.onclick=()=>setTab("qp"); tabPP.onclick=()=>setTab("pp"); tabCA.onclick=()=>setTab("ca");
+
+  // Loader helpers (FIXED: no unsupported behavior value)
+  const loadingEl=$("#loading"), loadingText=$("#loadingText");
+  function showLoader(text="Processing transfer…"){
+    loadingText.textContent=text;
+    // Hide mobile keyboard & ensure overlay is visible
+    try { document.activeElement && document.activeElement.blur && document.activeElement.blur(); } catch(e){}
+    window.scrollTo(0,0);           // <- safe everywhere
+    loadingEl.style.display="flex";
+  }
+  function hideLoader(){ loadingEl.style.display="none"; }
+  function disableButtons(disabled){
+    ["qp_send","pp_send","ca_send"].forEach(id=>{
+      const btn=document.getElementById(id);
+      if(btn){ btn.disabled=disabled; btn.style.opacity=disabled?".6":""; btn.style.cursor=disabled?"not-allowed":""; }
+    });
+  }
+  function redirectToStatus(newId){
+    // Short delay so user sees the loader, then go to the Money Sent page
+    setTimeout(()=>{
+      const url = newId
+        ? `transfer-status.html?id=${encodeURIComponent(newId)}`
+        : "transfer-status.html";
+      window.location.assign(url);  // <- robust redirect
+    }, 900);
+  }
+
+  // Quick Pay internal transfer
+  $("#qp_send").addEventListener("click", ()=>{
+    const to=$("#qp_email").value.trim().toLowerCase();
+    const amt=Number($("#qp_amount").value);
+    const note=$("#qp_note").value.trim();
+    const msg=$("#qp_msg"); msg.textContent="";
+    if(!to){ msg.textContent="Enter a Quick Pay email."; return; }
+    if(to===email){ msg.textContent="You cannot send to your own account."; return; }
+    const accounts = loadJSON(LS_ACCOUNTS,{});
+    if(!accounts[to]){ msg.textContent="Recipient not found on Quick Pay."; return; }
+    const bal=getBalance();
+    if(insufficient(amt, bal)){ msg.textContent="Insufficient funds."; return; }
+
+    disableButtons(true); showLoader("Processing transfer…");
+
+    const newBal = bal - amt; setBalance(newBal);
+    const id = txId();
+    const txBase={ id, created:Date.now(), amount:Number(amt.toFixed(2)), status:"Success", note, accountNo:(accts[email]?.accountNo||localStorage.getItem("qp_special_acct")||"") };
+    addTxFor(email, {...txBase, direction:"debit",  peerLabel:to, peerEmail:to});
+    // credit recipient
+    accounts[to].balance = Number((accounts[to].balance??0)+amt); saveJSON(LS_ACCOUNTS,accounts);
+    addTxFor(to,    {...txBase, direction:"credit", peerLabel:email, peerEmail:email});
+
+    redirectToStatus(id);
+  });
+
+  // PayPal (debit only)
+  $("#pp_send").addEventListener("click", ()=>{
+    const to=$("#pp_email").value.trim().toLowerCase();
+    const amt=Number($("#pp_amount").value);
+    const note=$("#pp_note").value.trim();
+    const msg=$("#pp_msg"); msg.textContent="";
+    if(!to){ msg.textContent="Enter a PayPal email."; return; }
+    const bal=getBalance();
+    if(insufficient(amt, bal)){ msg.textContent="Insufficient funds."; return; }
+
+    disableButtons(true); showLoader("Submitting to PayPal…");
+
+    const newBal=bal-amt; setBalance(newBal);
+    const id=txId();
+    addTxFor(email,{ id, created:Date.now(), amount:Number(amt.toFixed(2)), status:"Success", direction:"debit", peerLabel:`PayPal (${to})`, note, accountNo:(accts[email]?.accountNo||"") });
+
+    redirectToStatus(id);
+  });
+
+  // Cash App (debit only)
+  $("#ca_send").addEventListener("click", ()=>{
+    const tag=$("#ca_tag").value.trim();
+    const amt=Number($("#ca_amount").value);
+    const note=$("#ca_note").value.trim();
+    const msg=$("#ca_msg"); msg.textContent="";
+    if(!tag || !tag.startsWith("$")){ msg.textContent="Enter a valid $cashtag (e.g., $john)."; return; }
+    const bal=getBalance();
+    if(insufficient(amt, bal)){ msg.textContent="Insufficient funds."; return; }
+
+    disableButtons(true); showLoader("Submitting to Cash App…");
+
+    const newBal=bal-amt; setBalance(newBal);
+    const id=txId();
+    addTxFor(email,{ id, created:Date.now(), amount:Number(amt.toFixed(2)), status:"Success", direction:"debit", peerLabel:`Cash App (${tag})`, note, accountNo:(accts[email]?.accountNo||"") });
+
+    redirectToStatus(id);
+  });
+
+  // Logout
+  document.getElementById("logoutBtn").addEventListener("click",()=>{sessionStorage.removeItem(SESSION_EMAIL_KEY);sessionStorage.removeItem(SESSION_SPECIAL_KEY);window.location.href="index.html";});
+
+  // Hide loader if user navigates back (from bfcache)
+  window.addEventListener("pageshow",(e)=>{ if(e.persisted) hideLoader(); });
+</script>
+</body>
+</html>

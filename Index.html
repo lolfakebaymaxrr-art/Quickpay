@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Quick Pay — Sign in</title>
+  <style>
+    :root{
+      --bg:#0b0f10; --card:#10161a; --muted:#9aa4ad; --accent:#00c853;
+      --accent-2:#1de9b6; --text:#e8f0f2; --danger:#ff5252;
+      --tile-border:#1b242b; --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    html, body { height:100%; }
+    body{
+      margin:0; color:var(--text);
+      background:linear-gradient(135deg,#071013,#0b0f10 40%,#0e1418);
+      min-height:100vh; min-height:100dvh;
+    }
+    a { color:inherit; text-decoration:none; }
+    .app{width:100%;max-width:980px;margin:0 auto;padding:0;}
+    .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+    @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+    .panel{background:var(--card);border:1px solid var(--tile-border);border-radius:18px;box-shadow:var(--shadow)}
+    .p24{padding:24px}
+    h1,h2{margin:0 0 10px}
+    .muted{color:var(--muted);font-size:14px}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#00140a}
+
+    .tabs{display:flex;gap:10px;margin-top:14px}
+    .tabbtn{flex:1;padding:12px 14px;border-radius:12px;border:1px solid #24303a;background:#0f1519;color:var(--text);cursor:pointer}
+    .tabbtn.active{background:linear-gradient(135deg,#0f2a1b,#0e1f17);border-color:#1d3c2b;outline:2px solid rgba(0,200,83,.25)}
+
+    form{display:grid;gap:12px;margin-top:16px}
+    label{font-size:14px}
+    input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2a353f;background:#0f1519;color:var(--text)}
+    .btn{padding:12px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002314;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#131b20;color:var(--text);border:1px solid #24303a}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .hidden{display:none !important}
+    .error{color:var(--danger);font-size:13px}
+    .foot{margin-top:16px;color:var(--muted);font-size:12px}
+
+    /* Full-screen treatment on phones */
+    .page{min-height:100vh; min-height:100dvh; display:flex; align-items:stretch; padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    }
+    .wrap{width:100%;}
+    @media (max-width:720px){
+      .panel{border-radius:0;border-left:0;border-right:0}
+      .btn{width:100%}
+      input{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app page">
+    <div class="wrap">
+      <!-- Left: Brand/trust -->
+      <div class="panel p24">
+        <div class="brand">
+          <div class="logo">QP</div>
+          <div>
+            <h2>Quick Pay</h2>
+            <div class="muted">Fast, secure digital banking.</div>
+          </div>
+        </div>
+        <h3 style="margin:6px 0 8px">Welcome back</h3>
+        <p class="muted">Access your Quick Pay account to manage balances and payments.</p>
+        <div style="height:12px"></div>
+        <p class="foot">By continuing you agree to the <span style="opacity:.85">Terms</span> and <span style="opacity:.85">Privacy</span>.</p>
+      </div>
+
+      <!-- Right: Auth -->
+      <div class="panel p24">
+        <div class="tabs">
+          <button id="tabLogin" class="tabbtn active">Sign in</button>
+          <button id="tabCreate" class="tabbtn">Open account</button>
+        </div>
+
+        <!-- Sign in -->
+        <form id="loginForm" autocomplete="on">
+          <div>
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" inputmode="email" placeholder="you@example.com" required />
+          </div>
+          <div>
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="Your password" required />
+          </div>
+          <button class="btn" type="submit">Continue</button>
+          <div id="loginError" class="error hidden"></div>
+          <div class="muted" style="margin-top:6px">
+            New to Quick Pay? <span id="swapToCreate" style="cursor:pointer;color:#9de7c6">Open an account</span>.
+          </div>
+        </form>
+
+        <!-- Open account -->
+        <form id="createForm" class="hidden" autocomplete="off">
+          <div class="row">
+            <div style="flex:1">
+              <label for="createEmail">Email</label>
+              <input id="createEmail" type="email" inputmode="email" placeholder="you@example.com" required />
+            </div>
+          </div>
+          <div class="row">
+            <div style="flex:1">
+              <label for="createPassword">Password</label>
+              <input id="createPassword" type="password" minlength="6" placeholder="At least 6 characters" required />
+            </div>
+            <div style="flex:1">
+              <label for="createConfirm">Confirm password</label>
+              <input id="createConfirm" type="password" minlength="6" placeholder="Re-enter password" required />
+            </div>
+          </div>
+          <button class="btn" type="submit">Create account</button>
+          <div id="createError" class="error hidden"></div>
+          <div class="muted" style="margin-top:6px">
+            Already have an account? <span id="swapToLogin" style="cursor:pointer;color:#9de7c6">Sign in</span>.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Storage keys
+    const LS_KEY = "qp_accounts_v1";
+    const SESSION_EMAIL_KEY = "qp_session_email";
+    const SESSION_SPECIAL_KEY = "qp_session_special";
+
+    // Special account (not shown in UI)
+    const SPECIAL_EMAIL = "ebuka@gmail.com";
+    const SPECIAL_PASS  = "graceofgod";
+
+    // Helpers
+    function loadAccounts(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }catch(e){ return {}; } }
+    function saveAccounts(obj){ localStorage.setItem(LS_KEY, JSON.stringify(obj)); }
+    function show(el){ el.classList.remove("hidden"); }
+    function hide(el){ el.classList.add("hidden"); }
+
+    // Tabs
+    const tabLogin = document.getElementById("tabLogin");
+    const tabCreate = document.getElementById("tabCreate");
+    const loginForm = document.getElementById("loginForm");
+    const createForm = document.getElementById("createForm");
+    const loginError = document.getElementById("loginError");
+    const createError = document.getElementById("createError");
+    const swapToCreate = document.getElementById("swapToCreate");
+    const swapToLogin = document.getElementById("swapToLogin");
+
+    function activateTab(which){
+      if(which==="login"){
+        tabLogin.classList.add("active"); tabCreate.classList.remove("active");
+        show(loginForm); hide(createForm); loginError.classList.add("hidden");
+      }else{
+        tabCreate.classList.add("active"); tabLogin.classList.remove("active");
+        show(createForm); hide(loginForm); createError.classList.add("hidden");
+      }
+    }
+    tabLogin.addEventListener("click", ()=>activateTab("login"));
+    tabCreate.addEventListener("click", ()=>activateTab("create"));
+    swapToCreate?.addEventListener("click", ()=>activateTab("create"));
+    swapToLogin?.addEventListener("click", ()=>activateTab("login"));
+
+    function isSpecial(email, pass){ return email===SPECIAL_EMAIL && pass===SPECIAL_PASS; }
+    function isSpecialEmail(email){ return email===SPECIAL_EMAIL; }
+
+    // Create Account
+    createForm.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      createError.classList.add("hidden");
+      const email = document.getElementById("createEmail").value.trim().toLowerCase();
+      const pass = document.getElementById("createPassword").value;
+      const conf = document.getElementById("createConfirm").value;
+
+      if(pass !== conf){
+        createError.textContent = "Passwords do not match."; createError.classList.remove("hidden"); return;
+      }
+      if(isSpecialEmail(email)){
+        createError.textContent = "This email cannot be used. Please choose another."; createError.classList.remove("hidden"); return;
+      }
+      const accounts = loadAccounts();
+      if(accounts[email]){
+        createError.textContent = "An account with this email already exists. Please sign in."; createError.classList.remove("hidden"); return;
+      }
+      accounts[email] = { password: pass, balance: 0, accountNo: String(Math.random()).slice(2,13), createdAt: new Date().toISOString() };
+      saveAccounts(accounts);
+
+      activateTab("login");
+      document.getElementById("loginEmail").value = email;
+      document.getElementById("loginPassword").value = pass;
+    });
+
+    // Login
+    loginForm.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      loginError.classList.add("hidden");
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const pass = document.getElementById("loginPassword").value;
+
+      if(isSpecial(email, pass)){
+        sessionStorage.setItem(SESSION_EMAIL_KEY, email);
+        sessionStorage.setItem(SESSION_SPECIAL_KEY, "1");
+        window.location.href = "dashboard.html";
+        return;
+      }
+      const accounts = loadAccounts();
+      const user = accounts[email];
+      if(!user || user.password !== pass){
+        loginError.textContent = "Invalid email or password."; loginError.classList.remove("hidden"); return;
+      }
+      sessionStorage.setItem(SESSION_EMAIL_KEY, email);
+      sessionStorage.setItem(SESSION_SPECIAL_KEY, "0");
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>

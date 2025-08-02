@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quick Pay — Dashboard</title>
+<style>
+  :root{
+    --bg:#0b0f10; --card:#10161a; --muted:#9aa4ad; --accent:#00c853;
+    --accent-2:#1de9b6; --text:#e8f0f2; --danger:#ff4d4f; --ink:#e8f0f2;
+    --tile:#121a1f; --tile-border:#1b242b; --shadow:0 10px 30px rgba(0,0,0,.35)
+  }
+  *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  html, body { height:100%; }
+  body{
+    margin:0; color:var(--text);
+    background:linear-gradient(135deg,#071013,#0b0f10 40%,#0e1418);
+    min-height:100vh; min-height:100dvh;
+  }
+  a{text-decoration:none;color:inherit}
+  .app{width:100%;max-width:980px;margin:0 auto;padding:0}
+  .panel{background:var(--card);border:1px solid var(--tile-border);border-radius:18px;box-shadow:var(--shadow)}
+  .p24{
+    padding:24px;
+    min-height:100vh; min-height:100dvh;
+    border-radius:0; border-left:0; border-right:0;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    display:flex; flex-direction:column;
+  }
+  .muted{color:var(--muted)}
+  h1,h2,h3{margin:0 0 10px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:800;color:#00140a}
+  .topbar{position:sticky;top:0;z-index:5;background:rgba(16,22,26,.9);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:space-between;margin:-8px -8px 12px -8px;padding:8px;border-bottom:1px solid var(--tile-border);border-radius:12px}
+  .btn{padding:10px 14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002314;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#131b20;color:var(--text);border:1px solid #24303a}
+
+  .acct-card{border-radius:20px;overflow:hidden}
+  .acct-hero{background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.1));height:110px;border-top-left-radius:18px;border-top-right-radius:18px;display:flex;align-items:flex-start;justify-content:space-between;padding:16px 18px}
+  .bell{filter:invert(1);opacity:.9}
+  .acct-body{background:#f7f9fa0a;backdrop-filter:blur(4px);border:1px solid #1b242b;margin:-24px 16px 0;border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .acct-no{letter-spacing:.28em}
+  .bal{font-size:36px;font-weight:800;display:flex;align-items:center;gap:10px;word-break:break-all}
+  .eye{width:22px;height:22px;opacity:.9;cursor:pointer}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #234030;background:#0d1f16;font-size:12px;color:var(--ink)}
+
+  .services{margin-top:18px;background:#0e1418;border:1px solid var(--tile-border);border-radius:18px;padding:14px}
+  .svc-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tile{background:var(--tile);border:1px solid var(--tile-border);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .12s ease,border-color .12s ease}
+  .tile:hover{transform:translateY(-2px);border-color:#33514a}
+  .icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#13221a,#0d1f16);border:1px solid #22372d}
+  .tile span{font-size:13px}
+  .foot{margin-top:auto;color:var(--muted);font-size:12px}
+
+  @media (min-width:720px){
+    .p24{border-radius:18px;border-left:1px solid var(--tile-border);border-right:1px solid var(--tile-border);}
+  }
+  @media (max-width:720px){
+    .btn{width:100%}
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel p24">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo">QP</div>
+          <div>
+            <div class="muted">Hello, <span id="helloName"></span></div>
+            <div class="muted" id="userEmail">email@example.com</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn secondary">Logout</button>
+      </div>
+
+      <div class="acct-card">
+        <div class="acct-hero">
+          <div></div>
+          <svg class="bell" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm6.36-6-.86-.86V11a5.5 5.5 0 0 0-4-5.29V5a1.5 1.5 0 1 0-3 0v.71A5.5 5.5 0 0 0 6.5 11v4.14l-.86.86A1 1 0 0 0 6.3 18h11.4a1 1 0 0 0 .66-1.72Z" fill="white"/></svg>
+        </div>
+        <div class="acct-body">
+          <div class="row">
+            <div class="muted">Account: <span id="acctNo" class="acct-no">00000000000</span></div>
+          </div>
+          <div class="bal" style="margin-top:8px">
+            <span id="balanceText">€0.00</span>
+            <svg id="eyeBtn" class="eye" viewBox="0 0 24 24" fill="none"><path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" fill="currentColor"/></svg>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div class="muted">Balance last updated at <span id="updatedAt">--:--</span></div>
+            <button id="refreshBtn" class="pill" title="Refresh balance">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 12.65-5.65Z" fill="currentColor"/></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="services" style="margin-top:18px">
+        <h3>Services</h3>
+        <div class="svc-list">
+          <a class="tile" href="send.html">
+            <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-8 16-1-7-7-1Z" stroke="white" stroke-width="1.5"/></svg></div>
+            <span>Send Money</span>
+          </a>
+          <a class="tile" href="history.html">
+            <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5"/><path d="M12 7v5l3 2" stroke="white" stroke-width="1.5"/></svg></div>
+            <span>Transaction History</span>
+          </a>
+          <a class="tile" href="settings.html">
+            <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="white" stroke-width="1.5"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.3 1a7.1 7.1 0 0 0-1.7-1L12 3 9.1 6a7.1 7.1 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.6a7 7 0 0 0 0 2L3 13.6l2 3.4 2.3-1a7.1 7.1 0 0 0 1.7 1L12 21l2.9-3a7.1 7.1 0 0 0 1.7-1l2.3 1 2-3.4-2-1.6c.07-.33.1-.66.1-1Z" stroke="white" stroke-width="1.5" opacity=".6"/></svg></div>
+            <span>Settings</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="foot">© Quick Pay</div>
+    </div>
+  </div>
+
+<script>
+  const LS_ACCOUNTS="qp_accounts_v1", SESSION_EMAIL_KEY="qp_session_email", SESSION_SPECIAL_KEY="qp_session_special";
+  const SPECIAL_EMAIL="ebuka@gmail.com", TRILLION=1_000_000_000_000;
+
+  const userEmailEl=document.getElementById("userEmail"),
+        helloNameEl=document.getElementById("helloName"),
+        balanceText=document.getElementById("balanceText"),
+        acctNoEl=document.getElementById("acctNo"),
+        updatedAtEl=document.getElementById("updatedAt"),
+        eyeBtn=document.getElementById("eyeBtn"),
+        refreshBtn=document.getElementById("refreshBtn"),
+        logoutBtn=document.getElementById("logoutBtn");
+
+  const email=sessionStorage.getItem(SESSION_EMAIL_KEY);
+  const special=sessionStorage.getItem(SESSION_SPECIAL_KEY)==="1";
+  if(!email) window.location.href="index.html";
+  userEmailEl.textContent=email; helloNameEl.textContent=email.split("@")[0].toUpperCase();
+
+  function loadJSON(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+  function saveJSON(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function fmtEUR(n){return new Intl.NumberFormat(undefined,{style:"currency",currency:"EUR"}).format(n)}
+  function nowTime(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+  function randAcct(){let s='';for(let i=0;i<11;i++)s+=Math.floor(Math.random()*10);return s}
+
+  const accts=loadJSON(LS_ACCOUNTS,{});
+  if(!special){
+    if(!accts[email]) accts[email]={password:"",balance:0};
+    if(!accts[email].accountNo) accts[email].accountNo=randAcct();
+    saveJSON(LS_ACCOUNTS,accts);
+  }
+  let accountNo = special ? (localStorage.getItem("qp_special_acct")||randAcct()) : accts[email].accountNo;
+  if(special && !localStorage.getItem("qp_special_acct")) localStorage.setItem("qp_special_acct", accountNo);
+  acctNoEl.textContent=accountNo;
+
+  // Special balance persistence
+  function getSpecialBalance(){ return Number(localStorage.getItem("qp_special_balance")||TRILLION); }
+  function setSpecialBalance(n){ localStorage.setItem("qp_special_balance", String(n)); }
+
+  let bal = special ? getSpecialBalance() : (accts[email]?.balance??0);
+  function setBalance(n){ balanceText.dataset.value=String(n); balanceText.textContent=fmtEUR(n); }
+  setBalance(bal); updatedAtEl.textContent=nowTime();
+
+  let hidden=false;
+  eyeBtn.addEventListener("click",()=>{ hidden=!hidden;
+    balanceText.textContent = hidden ? ('•'.repeat(Math.min(balanceText.textContent.length,10))+'••') : fmtEUR(Number(balanceText.dataset.value||0));
+    eyeBtn.style.opacity = hidden ? .5 : .9;
+  });
+  refreshBtn.addEventListener("click",()=>{updatedAtEl.textContent=nowTime(); refreshBtn.disabled=true; setTimeout(()=>refreshBtn.disabled=false,800);});
+  logoutBtn.addEventListener("click",()=>{sessionStorage.removeItem(SESSION_EMAIL_KEY);sessionStorage.removeItem(SESSION_SPECIAL_KEY);window.location.href="index.html";});
+</script>
+</body>
+</html>
